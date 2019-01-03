@@ -9,6 +9,11 @@ frappe.ui.form.on("System Settings", "refresh", function(frm) {
 				frm.set_value(key, val);
 				frappe.sys_defaults[key] = val;
 			})
+
+			if ($.inArray("address_data", data.message.installed_apps)){
+				frm.set_df_property("enable_address_check", "read_only", 0);
+				frm.refresh_field("enable_address_check")
+			}
 		}
 	});
 });
