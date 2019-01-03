@@ -1,12 +1,12 @@
 // Copyright (c) 2016, Frappe Technologies and contributors
 // For license information, please see license.txt
 
-var address_fields = ["pincode","city", "county", "state"];
+var address_fields = ["pincode","city", "county", "state", 'country'];
 
 frappe.ui.form.on("Address", {
 	refresh: function(frm) {
 		
-		frm.filters_set_using = "state";
+		frm.filters_set_using = "country";
 		
 		if(frm.doc.__islocal) {
 			const last_doc = frappe.contacts.get_last_doc(frm);
@@ -30,16 +30,29 @@ frappe.ui.form.on("Address", {
 		});
 		frm.refresh_field("links");
 
-		// add filters to link fields
-		address_fields.forEach(area_type => {
-			if (frm.fields_dict[area_type].df.fieldtype == "Link"){
-				frm.set_query(area_type, function() {
-					return {
-						"filters": {
-							"administrative_area_type": area_type,
+		// add filters to link fields based on default country
+
+		frappe.call({
+			method: "frappe.contacts.doctype.address.address.get_administrative_area_details",
+			args: {"administrative_area": frm.doc[type]},
+			callback: function(data){
+				if (data.message.status == 1){
+					country_lft = data.message.lft
+					country_rgt = data.message.rgt
+					address_fields.forEach(area_type => {
+						if (frm.fields_dict[area_type].df.fieldtype == "Link"){
+							frm.set_query(area_type, function() {
+								return {
+									"filters": [
+										['Administrative Area','administrative_area_type',"=", area_type],
+										['Administrative Area','rgt',">",country_rgt],
+										['Administrative Area','lft',"<",country_lft],
+									]
+								};
+							});
 						}
-					};
-				});
+					});
+				}
 			}
 		});
 	},

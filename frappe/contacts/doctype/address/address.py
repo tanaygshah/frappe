@@ -272,7 +272,7 @@ def get_address_check_status():
 @frappe.whitelist()
 def get_administrative_area_details(administrative_area):
 	"""
-	returns lft, rgt of given administartive area t use for filtering
+	returns lft, rgt of given administrative area to use for filtering
 	"""
 	address_check_status = get_address_check_status()
 	if address_check_status['status'] == "1":
